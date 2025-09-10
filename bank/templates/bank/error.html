@@ -1,0 +1,22 @@
+{% extends "bank/layout.html" %}
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript"></script>
+
+{% load static %}
+{% load humanize %}
+
+{% block body %}
+
+{% if user.is_authenticated%}
+<div class="alert alert-warning" role="alert">
+  {{ message }}
+</div>
+{% else %}
+<p> Please <a href="{% url 'login' %}"> Log In </a> or <a href="{% url 'register' %}"> Register</a>. </p>
+{% endif %}
+
+{% endblock %}
+{% block script %}
+    <script src="{% static 'bank/bank.js' %}"></script>
+{% endblock %}

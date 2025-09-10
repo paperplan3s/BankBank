@@ -1,0 +1,91 @@
+{% extends "bank/layout.html" %}
+
+{% load static %}
+{% load humanize %}
+
+{% block body %}
+
+{% if user.is_authenticated%}
+
+<div class="jumbotron" id="jumbro">
+  <h3 class="display-4">{{account.type}} Account Transactions</h3>
+  <hr class="my-4">
+  <p class="lead">{{account.type}}: ${{ account.balance|floatformat:2|intcomma }}</p>
+  <p> XXXX-XXXX-XXXX-{{account.digits}} </p>
+  <p class="lead"></p>
+    <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Description</th>
+            <th scope="col">Amount</th>
+
+            <th scope="col">Balance</th>
+            {% if account.type == 'Checking' %}
+            <th scope="col">Category</th>
+            {% endif %}
+          </tr>
+
+
+    {% for transaction in transactions %}
+        <tr>
+        <th scope="row">{{transaction.timestamp}}</th>
+    {% if transaction.sendaccount == account and transaction.receiveaccount.user != request.user %}
+
+        <td><span style="color:red">{{transaction.sendaccount.type|capfirst }} Account to {{ transaction.receiveaccount.user|capfirst }}</span></td>
+
+        <td id="amount{{transaction.id}}">-{{transaction.amount|floatformat:2|intcomma}}</td>
+
+        {% elif transaction.sendaccount == account and transaction.receiveaccount.user == request.user %}
+        <td><span style="color:red"> Checking Account to {{transaction.receiveaccount.type|capfirst }} Account </span></td>
+        <td id="amount{{transaction.id}}">-{{transaction.amount|floatformat:2|intcomma}}</td>
+
+        {% elif transaction.sendaccount == account and transaction.receiveaccount.user == request.user %}
+        <td><span style="color:red"> Checking Account to {{transaction.receiveaccount.user|capfirst }} </span></td>
+        <td id="amount{{transaction.id}}">-{{transaction.amount|floatformat:2|intcomma}}</td>
+
+
+
+      {% else %}
+
+        <td><span style="color:green">{{transaction.sendaccount.user|capfirst }} to Checking Account</span></td>
+        <td id="amount{{transaction.id}}">{{transaction.amount|floatformat:2|intcomma}}</td>
+
+
+      {% endif %}
+
+        {% for balance in balances %}
+          {% if forloop.counter == forloop.parentloop.counter %}
+            <td id="balance{{transaction.id}}">${{balance|floatformat:2|intcomma}}</td>
+          {% endif %}
+        {% endfor %}
+
+        {% if account.type == 'Checking' %}
+      {% for key, value in categories.items %}
+      {% if forloop.counter == forloop.parentloop.counter %}
+          {% if value != None %}
+          <td class="category" id="cat{{transaction.id}}" >{{ value }} <input class="catbutton" id="{{transaction.id}}" style="width: 20%; background-color: royalblue;" type="submit" value=" "></td></tr>
+          {% else %}
+            <td class="category" id="cat{{transaction.id}}" > <input class="catbutton" id="{{transaction.id}}" style="width: 99%; background-color: royalblue;color: white;" type="submit" value="Categorize"></td></tr>
+          {% endif %}
+          {% endif %}
+      {% endfor %}
+      {% endif %}
+      {% empty %}
+      <h6> Sorry, no transactions found.</h6>
+    {% endfor %}
+
+
+</tbody>
+</table>
+
+
+
+{% else %}
+<p> Please <a href="{% url 'login' %}"> Log In </a> or <a href="{% url 'register' %}"> Register</a>. </p>
+{% endif %}
+</div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'bank/bank.js' %}"></script>
+{% endblock %}

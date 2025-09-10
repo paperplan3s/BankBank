@@ -1,0 +1,149 @@
+{% extends "bank/layout.html" %}
+
+{% load static %}
+{% load humanize %}
+
+{% block body %}
+
+{% if user.is_authenticated%}
+
+<div class="jumbotron" id="jumbro">
+  <h3 class="display-4">Bank Bank</h3>
+  <p class="lead"><i>Welcome back to Bank Bank, {{request.user|capfirst}}!</i></p>
+  <hr class="my-4">
+  <p class="lead">Checking:  ${{ checking.balance|floatformat:2|intcomma }}</p>
+  <p class="lead">Savings:  ${{ savings.balance|floatformat:2|intcomma }}</p>
+  <hr class="my-3">
+
+<h4>Transfer Funds</h4>
+{{ message }}
+<thead>
+
+</thead>
+<tbody>
+ <tr class="table_row">
+  <form class="form-inline" action="{% url 'inttransfer' %}" method="post">
+    {% for field in form %}
+      <td>
+       <table>
+        <tr><td>{{ field.label }}</td></tr>
+        <tr><td>{{ field }}</td></tr>
+       </table>
+      </td>
+    {% endfor %}
+    {% csrf_token %}
+    <input class="btn btn-primary" type="submit" value="Transfer" id="transferButton">
+   </form>
+  </tr>
+ </tbody>
+</div>
+
+<div class="jumbotron jumbotron-fluid" id="jumbro">
+    <h3 class="display-5"><a  id="savings" href="{% url 'account' 'Checking' %}"> Checking Account Transactions </a></h3>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Description</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Balance</th>
+          <th scope="col">Category</th>
+        </tr>
+
+
+  {% for transaction in c_transactions %}
+      <tr>
+      <th scope="row">{{transaction.timestamp}}</th>
+      {% if transaction.sendaccount == checking  and transaction.sendaccount.user != request.user %}
+          <td>{{transaction.user|capfirst }} to the {{ request.user|capfirst }}</td>
+          <td id="amount{{transaction.id}}"><span style="color:red">-{{transaction.amount|floatformat:2|intcomma}}</span></td>
+
+      {% elif transaction.sendaccount == checking  and transaction.receiveaccount.user != request.user %}
+          <td> Checking Account to {{transaction.receiveaccount.user|capfirst }}</td>
+          <td id="amount{{transaction.id}}"><span style="color:red">-{{transaction.amount|floatformat:2|intcomma}}</span></td>
+
+      {% elif transaction.sendaccount.user == checking.user  and transaction.receiveaccount.user == savings.user %}
+          <td> Checking  to  Savings </td>
+          <td id="amount{{transaction.id}}"><span style="color:red">-{{transaction.amount|floatformat:2|intcomma}}</span></td>
+
+      {% else %}
+          <td>{{transaction.sendaccount.user|capfirst }} to Checking Account</td>
+          <td id="amount{{transaction.id}}"><span style="color:green">{{transaction.amount|floatformat:2|intcomma}}</span></td>
+
+    {% endif %}
+
+      {% for balance in c_balances %}
+        {% if forloop.counter == forloop.parentloop.counter %}
+          <td id="balance{{transaction.id}}">${{balance|floatformat:2|intcomma}}</td>
+        {% endif %}
+      {% endfor %}
+
+
+    {% for key, value in c_categories.items %}
+    {% if forloop.counter == forloop.parentloop.counter %}
+        {% if value != None %}
+          <td class="category" id="cat{{transaction.id}}" >{{ value }} <input class="catbutton" id="{{transaction.id}}" style="width: 20%; background-color: royalblue;font-size: 10px;" type="submit" value=""></td></tr>
+        {% else %}
+          <td class="category" id="cat{{transaction.id}}" > <input class="catbutton" id="{{transaction.id}}" style="width: 99%; background-color: royalblue;color: white;" type="submit" value="Categorize"></td></tr>
+        {% endif %}
+        {% endif %}
+    {% endfor %}
+    {% empty %}
+    <h6> Sorry, no transactions found.</h6>
+  {% endfor %}
+
+</tbody>
+</table>
+
+  </div>
+</div>
+
+<div class="jumbotron jumbotron-fluid" id="jumbro">
+  <h3 class="display-5"><a  id="savings" href="{% url 'account' 'Savings' %}"> Savings Account Transactions </a></h3>
+  <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th scope="col">Date</th>
+      <th scope="col">Description</th>
+      <th scope="col">Amount</th>
+      <th scope="col">Balance</th>
+    </tr>
+
+
+{% for transaction in s_transactions %}
+  <tr>
+  <th scope="row">{{transaction.timestamp}}</th>
+  {% if transaction.sendaccount == checking   %}
+      <td>{{transaction.sendaccount.type|capfirst }} Account to {{transaction.receiveaccount.type|capfirst }} Account</td>
+      <td id="amount{{transaction.id}}"><span style="color:green">{{transaction.amount|floatformat:2|intcomma}}</span></td>
+
+  {% else %}
+      <td>{{transaction.sendaccount.type|capfirst }} Account to {{transaction.receiveaccount.type|capfirst }} Account</td>
+      <td id="amount{{transaction.id}}"><span style="color:red">{{transaction.amount|floatformat:2|intcomma}}</span></td>
+{% endif %}
+
+  {% for balance in s_balances %}
+    {% if forloop.counter == forloop.parentloop.counter %}
+      <td id="balance{{transaction.id}}">${{balance|floatformat:2|intcomma}}</td>
+    {% endif %}
+  {% endfor %}
+
+{% empty %}
+  <h6> Sorry, no transactions found.</h6>
+{% endfor %}
+
+</tbody>
+</table>
+</div>
+
+
+{% else %}
+<div class="jumbotron jumbotron-fluid" id="jumbro">
+    <h6 class="display-8">Please <a href="{% url 'login' %}">Log In</a> or <a href="{% url 'register' %}">Register</a>.</h6>
+</div>
+
+{% endif %}
+{% endblock %}
+{% block script %}
+    <script src="{% static 'bank/bank.js' %}"></script>
+{% endblock %}

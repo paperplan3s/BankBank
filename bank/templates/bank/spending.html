@@ -1,0 +1,79 @@
+{% extends "bank/layout.html" %}
+
+{% load static %}
+
+{% block body %}
+
+<head>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+      google.charts.load('current', {packages: ['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      document.addEventListener('DOMContentLoaded', function() {
+      let selectmenu = document.querySelector("select")
+      selectmenu.addEventListener("change", Change);
+      })
+
+
+      function Change() {
+        menu = document.querySelector("select")
+        selection = menu.value;
+        drawChart(selection);
+      }
+
+
+      function drawChart(period) {
+        if (period === undefined) {
+          period = "Week";
+        }
+        // Define the chart to be drawn.
+        let data = new google.visualization.DataTable();
+        data.addColumn('string', 'Element');
+        data.addColumn('number', 'Percentage');
+        let datalist = [];
+        let url_input = `/chart_data/${period}`;
+        fetch(url_input)
+        .then(response => response.json())
+        .then(result => {
+        datalist = Array.from(result);
+        if (datalist.length < 1){
+          document.getElementById('donutchart').innerHTML = "<br><p>No data to display for this period.</p>"
+        }
+        else {
+          data.addRows(datalist);
+          let formatter = new google.visualization.NumberFormat({prefix: '$'});
+          formatter.format(data, 1)
+          let chart = new google.visualization.PieChart(document.getElementById('donutchart'));
+          chart.draw(data, options);
+        }
+        })
+
+        // Instantiate and draw the chart.
+        let options = {
+          title: `My Spending by ${period}`,
+          pieHole: 0.4,
+        };
+      }
+    </script>
+  </head>
+
+  <body>
+    <!-- Identify where the chart should be drawn. -->
+    <div class="jumbotron" id="jumbro">
+    <h3 class="display-4">Spending Breakdown</h3>
+
+    <form>
+      {{ form.as_table }}
+    </form>
+  </div>
+    <div id="donutchart" style="width: 900px; height: 500px;"></div>
+
+
+
+  </body>
+
+  {% endblock %}
+  {% block script %}
+      <script src="{% static 'bank/bank.js' %}"></script>
+  {% endblock %}

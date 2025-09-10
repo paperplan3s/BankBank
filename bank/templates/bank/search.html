@@ -1,0 +1,71 @@
+{% extends "bank/layout.html" %}
+
+{% load humanize %}
+{% load static %}
+
+{% block body %}
+
+<div class="jumbotron" id="jumbro">
+  <h3 class="display-4">Search</h3>
+<table>
+  <form action="{% url 'search' %}" method="post" class="form-control">
+  {% csrf_token %}
+    {{ form.as_table }}
+    </table>
+    <input class="btn btn-primary" id="transferButton" type="submit" value="Search">
+  </form>
+</div>
+
+
+    {% if transactions %}
+    <div class="jumbotron" id="jumbro">
+      <h3 class="display-5">Results</h3>
+
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Description</th>
+          <th scope="col">Amount</th>
+
+          <th scope="col">Category</th>
+        </tr>
+
+
+  {% for transaction in transactions %}
+      <tr>
+      <th scope="row">{{transaction.timestamp}}</th>
+
+      <td>{{transaction.sendaccount|capfirst }} to {{transaction.receiveaccount|capfirst }}</td>
+      <td id="amount{{ forloop.counter }}">{{transaction.amount|floatformat:2|intcomma}}</td>
+
+
+    {% for key, value in categories.items %}
+    {% if forloop.counter == forloop.parentloop.counter %}
+        {% if value != None %}
+          <td class="category" id="{{transaction.id}}" >{{ value }} </td></tr>
+        {% else %}
+          <td class="category" id="{{transaction.id}}" > </td></tr>
+        {% endif %}
+        {% endif %}
+
+    {% endfor %}
+
+  {% endfor %}
+
+</tbody>
+</table>
+</div>
+{% endif %}
+
+{% if message%}
+<div class="alert alert-warning" role="alert">
+  No transactions met your search criteria.
+</div>
+{% endif%}
+
+
+{% endblock %}
+{% block script %}
+    <script src="{% static 'bank/bank.js' %}"></script>
+{% endblock %}

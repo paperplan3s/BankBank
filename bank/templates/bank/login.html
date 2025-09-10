@@ -1,0 +1,28 @@
+{% extends "bank/layout.html" %}
+
+{% load static %}
+
+{% block body %}
+
+
+{% if message %}
+    <div>{{ message }}</div>
+{% endif %}
+<div class="jumbotron" id="jumbro">
+    <h3 class="display-4">Login</h3>
+  <table>
+    <form action="{% url 'login' %}" method="post" class="form-control">
+    {% csrf_token %}
+    <input autofocus class="form-control" type="text" name="username" placeholder="Username" autocomplete="off">
+    <input class="form-control" type="password" name="password" placeholder="Password" autocomplete="off">
+      </table>
+      <input class="btn btn-primary" type="submit" value="Login">
+    </form>
+    <br>
+<p class="display-10">Don't have an account? <a href="{% url 'register' %}">Register here.</a></p>
+</div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'bank/bank.js' %}"></script>
+{% endblock %}

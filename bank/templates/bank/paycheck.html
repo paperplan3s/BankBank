@@ -1,0 +1,86 @@
+{% extends "bank/layout.html" %}
+
+{% load static %}
+
+{% block body %}
+
+<head>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+      google.charts.load('current', {packages: ['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      document.addEventListener('DOMContentLoaded', function() {
+      let selectmenu = document.querySelector("select")
+      selectmenu.addEventListener("change", Change);
+      })
+
+
+      function Change() {
+        menu = document.querySelector("select")
+        selection = menu.value;
+        drawChart(selection);
+        console.log(selection)
+      }
+
+
+      function drawChart(month) {
+        if (month === undefined) {
+          month = "current";
+        }
+        // Define the chart to be drawn.
+        let datalist = [];
+        let url_input = `/paycheck_data/${month}`;
+        fetch(url_input)
+        .then(response => response.json())
+        .then(result => {
+        datalist = Array.from(result);
+        if (datalist.length < 1 ){
+          document.getElementById('columnchart_values').innerHTML = "<br><p>No data to display for this period.</p>"
+        }
+        else {
+          var data = google.visualization.arrayToDataTable(datalist);
+          let formatter = new google.visualization.NumberFormat({prefix: '$'});
+          formatter.format(data, 1)
+          var chart = new google.visualization.ColumnChart(document.getElementById("columnchart_values"));
+          var mdate = datalist[1][0]
+
+        // Instantiate and draw the chart.
+
+          var options = {
+              title: `Paycheck Breakdown for ${mdate}`,
+              width: '60%',
+              height: '40%',
+              legend: { position: 'top', maxLines: 3 },
+              bar: { groupWidth: '65%' },
+              isStacked: 'percent',
+                };
+
+          chart.draw(data, options);
+        }
+        })
+
+      }
+
+
+    </script>
+  </head>
+
+
+  <body>
+    <!-- Identify where the chart should be drawn. -->
+    <div class="jumbotron" id="jumbro">
+      <h3 class="display-4">Paycheck Breakdown</h3>
+    <form>
+      {{ form.as_table }}
+    </form>
+  </div>
+
+    <div id="columnchart_values" style="width: 900px; height: 500px;"></div>
+  </body>
+
+
+  {% endblock %}
+  {% block script %}
+      <script src="{% static 'bank/bank.js' %}"></script>
+  {% endblock %}

@@ -1,0 +1,27 @@
+{% extends "bank/layout.html" %}
+
+{% load static %}
+
+{% block body %}
+
+<div class="jumbotron" id="jumbro">
+  <h3 class="display-4">Transfer</h3>
+  {% if message %}
+  <div class="alert alert-warning" role="alert">
+      {{message}}
+    </div>
+  {% endif %}
+  <table>
+<form action="{% url 'transfer' %}" method="post">
+{% csrf_token %}
+{{ form.as_table }}
+</table>
+<p id="details"></p>
+<input class="btn btn-primary" id="transferButton" type="submit" onclick="return confirm('Are you sure you want to transfer these funds?');" value="Transfer">
+</form>
+
+
+{% endblock %}
+{% block script %}
+    <script src="{% static 'bank/bank.js' %}"></script>
+{% endblock %}
